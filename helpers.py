@@ -333,7 +333,7 @@ class QuestionAnsweringTrainer(Trainer):
         loss = outputs.loss
         return (loss, outputs) if return_outputs else loss
     
-    def training_step(self, model, inputs, **kwargs):
+    def training_step(self, model, inputs):
         model.train()
         inputs = self._prepare_inputs(inputs)
         loss, outputs = self.compute_loss(model, inputs, return_outputs=True)
