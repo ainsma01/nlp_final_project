@@ -138,6 +138,7 @@ def main():
         eval_dataset=eval_dataset_featurized,
         tokenizer=tokenizer,
         compute_metrics=compute_metrics_and_store_predictions,
+        callbacks=[data_map_callback],
         data_map_callback=data_map_callback
     )
     # Train and/or evaluate
@@ -150,31 +151,6 @@ def main():
         # You can also add training hooks using Trainer.add_callback:
         #   See https://huggingface.co/transformers/main_classes/trainer.html#transformers.Trainer.add_callback
         #   and https://huggingface.co/transformers/main_classes/callback.html#transformers.TrainerCallback
-
-        # Compute data map coordinates
-        loss_history = data_map_callback.loss_history
-
-        el2n = {k: float(np.mean(v)) for k, v in loss_history.items()}
-        variance = {k: float(np.var(v)) for k, v in loss_history.items()}
-
-        with open("squad_data_map.jsonl", "w") as f:
-            for ex_id in loss_history.keys():
-                rec = {
-                    "id": ex_id,
-                    "losses": loss_history[ex_id],
-                    "el2n": el2n[ex_id],
-                    "variance": variance[ex_id]
-                }
-                f.write(json.dumps(rec) + "\n")
-
-        "Saved squad_data_map.jsonl"
-
-
-        
-        # Save data map
-        with open("squad_training_dynamics.jsonl", "w") as f:
-            for entry in data_map:
-                f.write(json.dumps(entry) + "\n")
 
     if training_args.do_eval:
         results = trainer.evaluate(**eval_kwargs)
