@@ -1,5 +1,5 @@
 import datasets
-from training_helpers import DataMapsCallback
+from training_helpers import DataMapCallback
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, \
     AutoModelForQuestionAnswering, Trainer, TrainingArguments, HfArgumentParser
 import evaluate
@@ -130,7 +130,7 @@ def main():
         return compute_metrics(eval_preds)
 
     # Initialize the Trainer object with the specified arguments and the model and dataset we loaded above
-    data_map_callback = DataMapsCallback()
+    data_map_callback = DataMapCallback()
     trainer = trainer_class(
         model=model,
         args=training_args,
