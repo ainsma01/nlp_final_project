@@ -2,7 +2,7 @@ import json
 import os
 from collections import defaultdict
 
-from transformers import TrainerCallback, TrainerState, TrainerControl
+from transformers import TrainerCallback, TrainerState, TrainerControl, TrainingArguments
 
 class DataMapCallback(TrainerCallback):
     """
@@ -45,14 +45,10 @@ class DataMapCallback(TrainerCallback):
                 'epoch': state.epoch,
             })
             
-    def on_step_end(self, args, state, control, model=None, tokenizer=None, optimizer=None, lr_scheduler=None, **kwargs):
+    def on_step_end(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, model=None, tokenizer=None, optimizer=None, lr_scheduler=None, **kwargs):
         """
         After each training step, we need to associate the loss (from the last log) 
         with the samples in the current batch.
-        
-        Note: The Trainer's internal batch structure is passed via 'kwargs' 
-        as 'self.current_batch' in some Trainer versions, but we'll rely on the 
-        standard 'inputs' passed to the callback.
         
         IMPORTANT: This assumes that the last logged average loss (from on_log) 
         is a reasonable proxy for the loss of the samples in this training step.
@@ -63,8 +59,11 @@ class DataMapCallback(TrainerCallback):
         if not inputs or 'unique_id' not in inputs:
             # This is expected behavior if the input dict doesn't contain the IDs
             # (e.g., if the user is running evaluation or prediction steps).
-            # It also serves as a check if the user forgot the 'unique_id' preprocessing.
-            if state.is_local_main_process and state.global_step % 100 == 0:
+            
+            # --- FIX: Replaced state.is_local_main_process with args.local_rank check ---
+            # local_rank is 0 for the main process in distributed training, and -1 otherwise.
+            is_main_process = args.local_rank in [-1, 0] 
+            if is_main_process and state.global_step % 100 == 0:
                 # Log only periodically to avoid too much console noise
                 print("Warning: 'unique_id' not found in inputs. Skipping datamap tracking for this step.")
             return
