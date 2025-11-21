@@ -74,11 +74,14 @@ def prepare_train_dataset_qa(examples, tokenizer, max_seq_length=None):
         sequence_ids = tokenized_examples.sequence_ids(i)
         # from the feature idx to sample idx
         sample_index = sample_mapping[i]
+
+        # --- Data Map Requirement: Map the original example ID to the feature ---
+        # The 'id' field from the original SQuAD dataset is the true unique ID.
+        feature_unique_id = examples["id"][sample_index]
+        tokenized_examples["unique_id"].append(feature_unique_id)
+
         # get the answer for a feature
         answers = examples["answers"][sample_index]
-
-        # Assign the original example ID to the feature
-        tokenized_examples["unique_id"].append(examples["unique_id"][sample_index])
 
         if len(answers["answer_start"]) == 0:
             tokenized_examples["start_positions"].append(cls_index)

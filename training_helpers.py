@@ -1,5 +1,6 @@
 import json
 import os
+import uuid
 from collections import defaultdict
 
 from transformers import TrainerCallback, TrainerState, TrainerControl, TrainingArguments
@@ -121,3 +122,16 @@ class DataMapCallback(TrainerCallback):
         print(f"\n--- Data Map Calculation Complete ---")
         print(f"Total samples tracked: {len(final_results)}")
         print(f"Results saved to: {output_path}")
+
+def add_unique_id_to_features(examples):
+    """
+    Preprocessing function to add a unique 'unique_id' field to each 
+    tokenized feature. This is the ID the callback will track.
+    
+    The user mentioned having a function to add an ID, so this is a placeholder 
+    implementation for a batch of examples.
+    """
+    # Create a unique ID for each example/feature in the batch
+    ids = [str(uuid.uuid4()) for _ in range(len(examples['input_ids']))]
+    examples['unique_id'] = ids
+    return examples
