@@ -35,6 +35,10 @@ class DataMapsCallback(TrainerCallback):
         gold_start   = inputs["start_positions"].detach().cpu()
         gold_end     = inputs["end_positions"].detach().cpu()
 
+        print(f"Example IDs: {example_ids}")
+        print(f"Gold start: {gold_start}")
+        print(f"Gold end: {gold_end}")
+
         # --- Per-example logging ---
         batch_size = len(example_ids)
         for i in range(batch_size):
@@ -47,6 +51,8 @@ class DataMapsCallback(TrainerCallback):
             pred_e = torch.argmax(end_logits[i]).item()
 
             correct = (pred_s == gold_s) and (pred_e == gold_e)
+
+            print(f"Correct: {correct}")
 
             # log gold logits
             record = {
