@@ -322,3 +322,13 @@ class QuestionAnsweringTrainer(Trainer):
         self.control = self.callback_handler.on_evaluate(self.args, self.state,
                                                          self.control, metrics)
         return metrics
+    
+    def compute_loss(self, model, inputs, return_outputs=False):
+        """
+        Override compute_loss to return both loss and outputs
+        so that the callback can access them.
+        """
+        labels = inputs.get("labels")
+        outputs = model(**inputs)
+        loss = outputs.loss
+        return (loss, outputs) if return_outputs else loss
