@@ -99,6 +99,10 @@ class DataMapCallback(TrainerCallback):
         return control
 
 def collate_fn_with_ids(batch):
+
+    for k,v in batch.items():
+        print(f"Key: {k}")
+
     print("Collator called for batch of size:", len(batch))
     collated = default_data_collator(batch)
 
