@@ -28,8 +28,13 @@ class DataMapsCallback(TrainerCallback):
         start_logits = outputs.start_logits.detach().cpu()
         end_logits   = outputs.end_logits.detach().cpu()
 
+        print(f"Start logits: {start_logits}")
+        print(f"End logits: {end_logits}")
+
         # Access model inputs from kwargs
         inputs = kwargs.get("inputs", {})
+
+        print(f"Inputs: {inputs}")
         
         example_ids  = inputs["id"].detach().cpu()
         gold_start   = inputs["start_positions"].detach().cpu()
