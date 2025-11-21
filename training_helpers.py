@@ -74,6 +74,9 @@ class DataMapsTrainer(Trainer):
     def compute_loss(self, model, inputs, return_outputs=False):
         outputs = model(**inputs)
 
+        print(f"Outputs: {outputs}")    
+        print(f"Loss: {outputs.loss}")
+
         loss = outputs.loss
         # return outputs so on_step_end can access logits
         return (loss, outputs) if return_outputs else loss
