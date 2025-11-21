@@ -62,25 +62,25 @@ class DataMapCallback(TrainerCallback):
     def on_epoch_end(self, args, state, control, **kwargs):
 
         data_map = []
+
         for fid, uid in self.feature_to_example.items():
-            losses = self.example_losses[fid]
-            confidences = self.example_confidences[fid]
+            # convert lists to tensors
+            losses_tensor = torch.tensor(self.example_losses[fid])
+            confidences_tensor = torch.tensor(self.example_confidences[fid])
             preds = self.example_predictions[fid]
             true_start, true_end = self.example_true_labels[fid]
 
             # correctness: fraction of predictions exactly matching true start/end
-            correctness = sum(1 for p in preds if p == (true_start, true_end)) / len(preds)
+            correctness = float(sum(1 for p in preds if p == (true_start, true_end)) / len(preds))
 
-            # convert tensors to floats
-            losses_tensor = torch.tensor(losses)
-            confidences_tensor = torch.tensor(confidences)
+            # variability and average confidence
             variability = float(torch.std(losses_tensor).item())
             avg_confidence = float(torch.mean(confidences_tensor).item())
 
             data_map.append({
-                "feature_id": fid,
-                "example_id": uid,
-                "correctness": float(correctness),   # ensure native float
+                "feature_id": int(fid),
+                "example_id": int(uid),
+                "correctness": correctness,
                 "variability": variability,
                 "confidence": avg_confidence
             })
@@ -96,7 +96,6 @@ class DataMapCallback(TrainerCallback):
 
 def collate_fn_with_ids(batch):
 
-    print("Collator called for batch of size:", len(batch))
     collated = default_data_collator(batch)
 
     # preserve metadata for callback
