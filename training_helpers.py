@@ -20,6 +20,7 @@ class DataMapsCallback(TrainerCallback):
         Fires every training step.
         Requires a custom Trainer that returns (loss, outputs).
         """
+        print("Executing on step end callback")
         if outputs is None:
             return
         
