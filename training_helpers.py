@@ -100,7 +100,8 @@ class DataMapCallback(TrainerCallback):
 
 def collate_fn_with_ids(batch):
 
-    for k,v in batch.items():
+    example = batch[0]
+    for k,v in example.items():
         print(f"Key: {k}")
 
     print("Collator called for batch of size:", len(batch))
