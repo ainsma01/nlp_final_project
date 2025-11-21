@@ -12,7 +12,7 @@ class TrainingDynamicsCallback(TrainerCallback):
         print(f"Logging from callback Epoch {self.epoch}")
         self.epoch = int(state.epoch)
 
-    def on_prediction_step(self, args, state, control, outputs, **inputs):
+    def on_step_end(self, args, state, control, outputs, **inputs):
         # outputs: model predictions
         # inputs: batch inputs including id
         print("Executing on prediction step")
