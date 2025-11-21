@@ -20,4 +20,4 @@ class DataMapCallback(TrainerCallback):
         print("On step end")
 
         for key, value in kwargs.items():
-            print(f"{key}: {value}")
+            print(f"Key: {key}")
