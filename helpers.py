@@ -263,9 +263,10 @@ def postprocess_qa_predictions(examples,
 
 # Adapted from https://github.com/huggingface/transformers/blob/master/examples/pytorch/question-answering/trainer_qa.py
 class QuestionAnsweringTrainer(Trainer):
-    def __init__(self, *args, eval_examples=None, **kwargs):
+    def __init__(self, *args, eval_examples=None, data_map_callback=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.eval_examples = eval_examples
+        self.data_map_callback = data_map_callback
 
     def evaluate(self,
                  eval_dataset=None,  # denotes the dataset after mapping
@@ -327,6 +328,10 @@ class QuestionAnsweringTrainer(Trainer):
        # Forward pass
         outputs = model(**inputs)
         loss = outputs.loss
+
+        # Pass batch directly to callback
+        if self.data_map_callback is not None:
+            self.data_map_callback.log_batch(inputs, outputs)
 
         # Save inputs and outputs for callback
         self._current_inputs = inputs

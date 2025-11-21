@@ -138,8 +138,8 @@ def main():
         eval_dataset=eval_dataset_featurized,
         tokenizer=tokenizer,
         compute_metrics=compute_metrics_and_store_predictions,
-        callbacks=[data_map_callback]
-        )
+        data_map_callback=data_map_callback
+    )
     # Train and/or evaluate
     if training_args.do_train:
         trainer.train()
