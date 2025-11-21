@@ -51,6 +51,7 @@ def main():
                       help='Limit the number of examples to evaluate on.')
 
     training_args, args = argp.parse_args_into_dataclasses()
+    training_args.remove_unused_columns = False
 
     dataset = datasets.load_dataset("squad")
     eval_split = 'validation'
