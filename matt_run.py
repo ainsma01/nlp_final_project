@@ -1,5 +1,5 @@
 import datasets
-from training_helpers import TrainingDynamicsCallback
+from training_helpers import DataMapsCallback, DataMapsTrainer
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, \
     AutoModelForQuestionAnswering, Trainer, TrainingArguments, HfArgumentParser
 import evaluate
@@ -127,7 +127,7 @@ def main():
         )
 
     # Select the training configuration
-    trainer_class = Trainer
+    trainer_class = DataMapsTrainer()
     eval_kwargs = {}
     # If you want to use custom metrics, you should define your own "compute_metrics" function.
     # For an example of a valid compute_metrics function, see compute_accuracy in helpers.py.
@@ -151,7 +151,7 @@ def main():
         return compute_metrics(eval_preds)
 
     # Initialize the Trainer object with the specified arguments and the model and dataset we loaded above
-    callback = TrainingDynamicsCallback()
+    callback = DataMapsCallback()
     trainer = trainer_class(
         model=model,
         args=training_args,

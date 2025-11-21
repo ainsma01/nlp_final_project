@@ -1,39 +1,67 @@
-from transformers import TrainerCallback
+from transformers import TrainerCallback, Trainer
 from collections import defaultdict
 import torch, numpy as np
 
-class TrainingDynamicsCallback(TrainerCallback):
+import torch
+from transformers import TrainerCallback
+from collections import defaultdict
 
+class DataMapsCallback(TrainerCallback):
+    
     def __init__(self):
         self.dynamics = defaultdict(list)
-        self.epoch = 0
+        self.current_epoch = 0
 
     def on_epoch_begin(self, args, state, control, **kwargs):
-        print(f"Logging from callback Epoch {self.epoch}")
-        self.epoch = int(state.epoch)
+        self.current_epoch = int(state.epoch)
 
-    def on_step_end(self, args, state, control, outputs, **inputs):
-        # outputs: model predictions
-        # inputs: batch inputs including id
-        print("Executing on prediction step")
+    def on_step_end(self, args, state, control, outputs=None, **kwargs):
+        """
+        Fires every training step.
+        Requires a custom Trainer that returns (loss, outputs).
+        """
+        if outputs is None:
+            return
+        
+        # --- Extract logits ---
         start_logits = outputs.start_logits.detach().cpu()
         end_logits   = outputs.end_logits.detach().cpu()
 
-        batch_ids = inputs["id"].detach().cpu()
-        gold_start = inputs["start_positions"].detach().cpu()
-        gold_end   = inputs["end_positions"].detach().cpu()
+        # Access model inputs from kwargs
+        inputs = kwargs.get("inputs", {})
+        
+        example_ids  = inputs["id"].detach().cpu()
+        gold_start   = inputs["start_positions"].detach().cpu()
+        gold_end     = inputs["end_positions"].detach().cpu()
 
-        for i, ex_id in enumerate(batch_ids):
-            s_logit = start_logits[i, gold_start[i]].item()
-            e_logit = end_logits[i, gold_end[i]].item()
+        # --- Per-example logging ---
+        batch_size = len(example_ids)
+        for i in range(batch_size):
+            ex_id = int(example_ids[i])
+
+            gold_s = int(gold_start[i])
+            gold_e = int(gold_end[i])
 
             pred_s = torch.argmax(start_logits[i]).item()
             pred_e = torch.argmax(end_logits[i]).item()
-            correct = (pred_s == gold_start[i]) and (pred_e == gold_end[i])
 
-            self.dynamics[int(ex_id)].append({
-                "epoch": self.epoch,
-                "start_logit": s_logit,
-                "end_logit": e_logit,
-                "correct": bool(correct)
-            })
+            correct = (pred_s == gold_s) and (pred_e == gold_e)
+
+            # log gold logits
+            record = {
+                "epoch": self.current_epoch,
+                "start_logit": float(start_logits[i, gold_s]),
+                "end_logit": float(end_logits[i, gold_e]),
+                "correct": bool(correct),
+            }
+
+            self.dynamics[ex_id].append(record)
+
+
+class DataMapsTrainer(Trainer):
+    def compute_loss(self, model, inputs, return_outputs=False):
+        outputs = model(**inputs)
+
+        loss = outputs.loss
+        # return outputs so on_step_end can access logits
+        return (loss, outputs) if return_outputs else loss
