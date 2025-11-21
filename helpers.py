@@ -67,6 +67,9 @@ def prepare_train_dataset_qa(examples, tokenizer, max_seq_length=None):
     tokenized_examples["start_positions"] = []
     tokenized_examples["end_positions"] = []
 
+    # --- Data Map Requirement: Add the list for unique_id ---
+    tokenized_examples["unique_id"] = []
+
     for i, offsets in enumerate(offset_mapping):
         input_ids = tokenized_examples["input_ids"][i]
         # We will label features not containing the answer the index of the CLS token.
