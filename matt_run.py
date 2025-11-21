@@ -127,7 +127,7 @@ def main():
         )
 
     # Select the training configuration
-    trainer_class = DataMapsTrainer()
+    trainer_class = DataMapsTrainer
     eval_kwargs = {}
     # If you want to use custom metrics, you should define your own "compute_metrics" function.
     # For an example of a valid compute_metrics function, see compute_accuracy in helpers.py.
