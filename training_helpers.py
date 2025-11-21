@@ -87,6 +87,10 @@ class DataMapCallback(TrainerCallback):
         if current_loss is None:
             # If no loss has been logged yet (e.g., very early in training)
             return
+        
+        print(f"Inputs: {inputs}")
+        print(f"Current loss: {current_loss}")
+        print(f"Current epoch: {current_epoch}")
 
         # 2. Get the unique IDs from the batch
         unique_ids = inputs['unique_id']
