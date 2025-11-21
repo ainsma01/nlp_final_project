@@ -17,6 +17,9 @@ class DataMapCallback(TrainerCallback):
     def log_batch(self, inputs, outputs):
         # feature-level example IDs
         unique_ids = inputs["unique_id"]
+
+        print(f"Unique Ids {unique_ids}")
+
         print(f"Logging Batch: {unique_ids}")
 
         example_ids = inputs.get("example_id", list(range(inputs["input_ids"].size(0))))
