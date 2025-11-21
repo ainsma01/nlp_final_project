@@ -129,7 +129,7 @@ def main():
         eval_predictions = eval_preds
         return compute_metrics(eval_preds)
     
-    training_args["remove_unused_columns"] = False
+    training_args.remove_unused_columns = False
 
     # Initialize the Trainer object with the specified arguments and the model and dataset we loaded above
     data_map_callback = DataMapCallback()
