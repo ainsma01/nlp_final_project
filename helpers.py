@@ -324,11 +324,12 @@ class QuestionAnsweringTrainer(Trainer):
         return metrics
     
     def compute_loss(self, model, inputs, return_outputs=False, **kwargs):
-        """
-        Override compute_loss to return both loss and outputs
-        so that the callback can access them.
-        """
-        labels = inputs.get("labels")
+       # Forward pass
         outputs = model(**inputs)
         loss = outputs.loss
+
+        # Save inputs and outputs for callback
+        self._current_inputs = inputs
+        self._current_outputs = outputs
+
         return (loss, outputs) if return_outputs else loss

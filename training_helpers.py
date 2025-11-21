@@ -25,3 +25,14 @@ class DataMapCallback(TrainerCallback):
         print(f"Args: {args}")
         print(f"State: {state}")
         print(f"Control: {control}")
+
+        # Trainer instance may not be passed directly; we can access via model.trainer
+        trainer = kwargs.get("model").trainer
+        if not trainer:
+            return
+
+        inputs = getattr(trainer, "_current_inputs", None)
+        outputs = getattr(trainer, "_current_outputs", None)
+
+        print(f"Inputs: {inputs}")
+        print(f"Outputs: {outputs}")
