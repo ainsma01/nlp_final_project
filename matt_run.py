@@ -77,26 +77,6 @@ def main():
 
     tokenizer = AutoTokenizer.from_pretrained(args.model, use_fast=True)
 
-    # Tokenize the dataset while keeping track of the example IDs
-    def preproces(ex):
-        out = tokenizer(
-            ex["context"],
-            ex["question"],
-            truncation=True,
-            max_length=384,
-            stride=128,
-            return_offsets_mapping=True,
-            padding="max_length"
-        )
-
-        out["id"] = ex["id"]
-        out["start_positions"] = ex["answers"]["answer_start"][0]
-        out["end_positions"]   = out["start_positions"] + len(ex["answers"]["text"][0])
-
-        return out
-
-    tokenized = dataset.map(preproces, batched=False)
-
     # Select the dataset preprocessing function (these functions are defined in helpers.py)
     prepare_train_dataset = lambda exs: prepare_train_dataset_qa(exs, tokenizer)
     prepare_eval_dataset = lambda exs: prepare_validation_dataset_qa(exs, tokenizer)

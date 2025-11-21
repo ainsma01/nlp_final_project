@@ -77,6 +77,9 @@ def prepare_train_dataset_qa(examples, tokenizer, max_seq_length=None):
         # get the answer for a feature
         answers = examples["answers"][sample_index]
 
+        # Assign the original example ID to the feature
+        tokenized_examples["id"].append(examples["id"][sample_index])
+
         if len(answers["answer_start"]) == 0:
             tokenized_examples["start_positions"].append(cls_index)
             tokenized_examples["end_positions"].append(cls_index)
