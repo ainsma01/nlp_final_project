@@ -150,7 +150,7 @@ def main():
         return compute_metrics(eval_preds)
 
     # Initialize the Trainer object with the specified arguments and the model and dataset we loaded above
-    callback = DataMapsCallback()
+    data_map_callback = DataMapsCallback()
     trainer = trainer_class(
         model=model,
         args=training_args,
@@ -158,7 +158,7 @@ def main():
         eval_dataset=eval_dataset_featurized,
         tokenizer=tokenizer,
         compute_metrics=compute_metrics_and_store_predictions,
-        callbacks=[callback]
+        callbacks=[data_map_callback]
         )
     # Train and/or evaluate
     if training_args.do_train:
@@ -172,19 +172,24 @@ def main():
         #   and https://huggingface.co/transformers/main_classes/callback.html#transformers.TrainerCallback
 
         # Compute data map coordinates
-        data_map = []
+        loss_history = data_map_callback.loss_history
 
-        for ex_id, points in callback.dynamics.items():
-            conf = np.mean([(p["start_logit"] + p["end_logit"]) / 2 for p in points])
-            var  = np.std([(p["start_logit"] + p["end_logit"]) / 2 for p in points])
-            cor  = np.mean([p["correct"] for p in points])
+        el2n = {k: float(np.mean(v)) for k, v in loss_history.items()}
+        variance = {k: float(np.var(v)) for k, v in loss_history.items()}
 
-            data_map.append({
-                "id": ex_id,
-                "confidence": float(conf),
-                "variability": float(var),
-                "correctness": float(cor)
-            })
+        with open("squad_data_map.jsonl", "w") as f:
+            for ex_id in loss_history.keys():
+                rec = {
+                    "id": ex_id,
+                    "losses": loss_history[ex_id],
+                    "el2n": el2n[ex_id],
+                    "variance": variance[ex_id]
+                }
+                f.write(json.dumps(rec) + "\n")
+
+        "Saved squad_data_map.jsonl"
+
+
         
         # Save data map
         with open("squad_training_dynamics.jsonl", "w") as f:

@@ -1,72 +1,40 @@
-from transformers import TrainerCallback, Trainer
-from collections import defaultdict
-import torch, numpy as np
-
-import torch
 from transformers import TrainerCallback
 from collections import defaultdict
+import torch
 
-class DataMapsCallback(TrainerCallback):
-    
+class DataMapCallback(TrainerCallback):
+
     def __init__(self):
-        self.dynamics = defaultdict(list)
-        self.current_epoch = 0
+        self.loss_history = defaultdict(list)   # example_id → list of losses across epochs
 
     def on_epoch_begin(self, args, state, control, **kwargs):
-        self.current_epoch = int(state.epoch)
+        self.current_epoch = state.epoch
 
-    def on_step_end(self, args, state, control, outputs=None, **kwargs):
+    def on_step_end(self, args, state, control, **kwargs):
         """
-        Fires every training step.
-        Requires a custom Trainer that returns (loss, outputs).
+        kwargs contains:
+            - model
+            - inputs (batch)
+            - outputs (model outputs for the batch with reduced loss)
         """
-        print("Executing on step end callback")
-        if outputs is None:
-            return
+        model = kwargs["model"]
+        inputs = kwargs["inputs"]
+
+        # Recompute forward pass but with reduction='none' so we get per-example loss
+        with torch.no_grad():
+            out = model(**inputs, output_hidden_states=False, return_dict=True)
         
-        print(f"Outputs: {outputs}") # (loss, outputs)
-        
-        # --- Extract logits ---
-        start_logits = outputs.start_logits.detach().cpu()
-        end_logits   = outputs.end_logits.detach().cpu()
+        # logits → compute individual loss manually
+        # QA uses start/end logits → we compute cross-entropy loss per example
+        start_loss = torch.nn.functional.cross_entropy(
+            out.start_logits, inputs["start_positions"], reduction="none"
+        )
+        end_loss = torch.nn.functional.cross_entropy(
+            out.end_logits, inputs["end_positions"], reduction="none"
+        )
 
-        print(f"Start logits: {start_logits}")
-        print(f"End logits: {end_logits}")
+        batch_losses = (start_loss + end_loss) / 2
 
-        # Access model inputs from kwargs
-        inputs = kwargs.get("inputs", {})
-
-        print(f"Inputs: {inputs}")
-        
-        example_ids  = inputs["id"].detach().cpu()
-        gold_start   = inputs["start_positions"].detach().cpu()
-        gold_end     = inputs["end_positions"].detach().cpu()
-
-        print(f"Example IDs: {example_ids}")
-        print(f"Gold start: {gold_start}")
-        print(f"Gold end: {gold_end}")
-
-        # --- Per-example logging ---
-        batch_size = len(example_ids)
-        for i in range(batch_size):
-            ex_id = int(example_ids[i])
-
-            gold_s = int(gold_start[i])
-            gold_e = int(gold_end[i])
-
-            pred_s = torch.argmax(start_logits[i]).item()
-            pred_e = torch.argmax(end_logits[i]).item()
-
-            correct = (pred_s == gold_s) and (pred_e == gold_e)
-
-            print(f"Correct: {correct}")
-
-            # log gold logits
-            record = {
-                "epoch": self.current_epoch,
-                "start_logit": float(start_logits[i, gold_s]),
-                "end_logit": float(end_logits[i, gold_e]),
-                "correct": bool(correct),
-            }
-
-            self.dynamics[ex_id].append(record)
+        # Record losses for every example
+        for id_value, loss_val in zip(inputs["id"], batch_losses.detach().cpu().tolist()):
+            self.loss_history[id_value].append(loss_val)
