@@ -92,7 +92,8 @@ def main():
         train_dataset_featurized = train_dataset.map(
             prepare_train_dataset,
             batched=True,
-            num_proc=NUM_PREPROCESSING_WORKERS
+            num_proc=NUM_PREPROCESSING_WORKERS,
+            remove_columns=train_dataset.column_names
         )
     if training_args.do_eval:
         eval_dataset = dataset[eval_split]
@@ -101,7 +102,8 @@ def main():
         eval_dataset_featurized = eval_dataset.map(
             prepare_eval_dataset,
             batched=True,
-            num_proc=NUM_PREPROCESSING_WORKERS
+            num_proc=NUM_PREPROCESSING_WORKERS,
+            remove_columns=eval_dataset.column_names
         )
 
     # Select the training configuration
@@ -138,6 +140,7 @@ def main():
         compute_metrics=compute_metrics_and_store_predictions,
         callbacks=[data_map_callback],
         data_map_callback=data_map_callback
+        remove_unused_columns=False
     )
     # Train and/or evaluate
     if training_args.do_train:
