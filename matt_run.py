@@ -92,8 +92,7 @@ def main():
         train_dataset_featurized = train_dataset.map(
             prepare_train_dataset,
             batched=True,
-            num_proc=NUM_PREPROCESSING_WORKERS,
-            remove_columns=train_dataset.column_names
+            num_proc=NUM_PREPROCESSING_WORKERS
         )
     if training_args.do_eval:
         eval_dataset = dataset[eval_split]
@@ -102,8 +101,7 @@ def main():
         eval_dataset_featurized = eval_dataset.map(
             prepare_eval_dataset,
             batched=True,
-            num_proc=NUM_PREPROCESSING_WORKERS,
-            remove_columns=eval_dataset.column_names
+            num_proc=NUM_PREPROCESSING_WORKERS
         )
 
     # Select the training configuration
