@@ -332,3 +332,17 @@ class QuestionAnsweringTrainer(Trainer):
         outputs = model(**inputs)
         loss = outputs.loss
         return (loss, outputs) if return_outputs else loss
+    
+    def training_step(self, model, inputs, **kwargs):
+        model.train()
+        inputs = self._prepare_inputs(inputs)
+        loss, outputs = self.compute_loss(model, inputs, return_outputs=True)
+
+        # Manually call callbacks with inputs/outputs
+        self.control = self.callback_handler.on_step_end(
+            self.args, self.state, self.control,
+            model=model, inputs=inputs, outputs=outputs
+        )
+        
+        loss.backward()
+        return loss.detach()
