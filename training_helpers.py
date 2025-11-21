@@ -100,7 +100,11 @@ class DataMapCallback(TrainerCallback):
 
 def collate_fn_with_ids(batch):
     collated = default_data_collator(batch)
+
     # preserve metadata for callback
     collated["_unique_id"] = torch.tensor([ex["unique_id"] for ex in batch])
     collated["_feature_id"] = torch.tensor([ex["feature_id"] for ex in batch])
+
+    print(f"Hello mr data collector: {collated["_unique_id"]}")
+
     return collated
