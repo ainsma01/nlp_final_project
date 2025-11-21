@@ -2,7 +2,7 @@ from transformers import TrainerCallback
 from collections import defaultdict
 import torch
 
-class DataMapCallback(TrainerCallback):
+class DataMapsCallback(TrainerCallback):
 
     def __init__(self):
         self.loss_history = defaultdict(list)   # example_id → list of losses across epochs
