@@ -61,39 +61,40 @@ class DataMapCallback(TrainerCallback):
 
     def on_epoch_end(self, args, state, control, **kwargs):
 
-       data_map = []
-       for fid, uid in self.feature_to_example.items():
-           losses = self.example_losses[fid]
-           confidences = self.example_confidences[fid]
-           preds = self.example_predictions[fid]
-           true_start, true_end = self.example_true_labels[fid]
+        data_map = []
+        for fid, uid in self.feature_to_example.items():
+            losses = self.example_losses[fid]
+            confidences = self.example_confidences[fid]
+            preds = self.example_predictions[fid]
+            true_start, true_end = self.example_true_labels[fid]
 
-           # correctness: fraction of predictions exactly matching true start/end
-           correctness = sum(1 for p in preds if p == (true_start, true_end)) / len(preds)
-           variability = float(torch.std(torch.tensor(losses)).item())
-           avg_confidence = float(torch.mean(torch.tensor(confidences)).item())
+            # correctness: fraction of predictions exactly matching true start/end
+            correctness = sum(1 for p in preds if p == (true_start, true_end)) / len(preds)
 
-           data_map.append({
-               "feature_id": fid,
-               "example_id": uid,
-               "correctness": correctness,
-               "variability": variability,
-               "confidence": avg_confidence
-           })
+            # convert tensors to floats
+            losses_tensor = torch.tensor(losses)
+            confidences_tensor = torch.tensor(confidences)
+            variability = float(torch.std(losses_tensor).item())
+            avg_confidence = float(torch.mean(confidences_tensor).item())
 
-       # write per-epoch JSONL file
-       out_file = f"data_map_epoch_{int(state.epoch)}.jsonl"
-       with open(out_file, "w") as f:
-           for entry in data_map:
-               f.write(json.dumps(entry) + "\n")
+            data_map.append({
+                "feature_id": fid,
+                "example_id": uid,
+                "correctness": float(correctness),   # ensure native float
+                "variability": variability,
+                "confidence": avg_confidence
+            })
 
-       print(f"[DataMapCallback] Wrote {len(data_map)} features to {out_file}")
+        # write per-epoch JSONL file
+        out_file = f"data_map_epoch_{int(state.epoch)}.jsonl"
+        with open(out_file, "w") as f:
+            for entry in data_map:
+                f.write(json.dumps(entry) + "\n")
+
+        print(f"[DataMapCallback] Wrote {len(data_map)} features to {out_file}")
+
 
 def collate_fn_with_ids(batch):
-
-    example = batch[0]
-    for k,v in example.items():
-        print(f"Key: {k}")
 
     print("Collator called for batch of size:", len(batch))
     collated = default_data_collator(batch)
@@ -101,7 +102,5 @@ def collate_fn_with_ids(batch):
     # preserve metadata for callback
     collated["_unique_id"] = torch.tensor([ex["unique_id"] for ex in batch])
     collated["_feature_id"] = torch.tensor([ex["feature_id"] for ex in batch])
-
-    print(f"Hello mr data collector: {collated["_unique_id"]}")
 
     return collated
