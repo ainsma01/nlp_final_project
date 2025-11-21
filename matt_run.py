@@ -159,8 +159,8 @@ def main():
         eval_dataset=eval_dataset_featurized,
         tokenizer=tokenizer,
         compute_metrics=compute_metrics_and_store_predictions,
-        callback=[callback]
-    )
+        callbacks=[callback]
+        )
     # Train and/or evaluate
     if training_args.do_train:
         trainer.train()
