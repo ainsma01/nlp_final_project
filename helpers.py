@@ -80,7 +80,7 @@ def prepare_train_dataset_qa(examples, tokenizer, max_seq_length=None):
 
         # --- Data Map Requirement: Map the original example ID to the feature ---
         # The 'id' field from the original SQuAD dataset is the true unique ID.
-        print(f"Feature unique ID: {examples['id'][sample_index]}")
+        # print(f"Feature unique ID: {examples['id'][sample_index]}")
         feature_unique_id = examples["id"][sample_index]
         tokenized_examples["unique_id"].append(feature_unique_id)
         
