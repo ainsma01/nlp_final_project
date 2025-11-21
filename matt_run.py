@@ -139,7 +139,7 @@ def main():
         tokenizer=tokenizer,
         compute_metrics=compute_metrics_and_store_predictions,
         callbacks=[data_map_callback],
-        data_map_callback=data_map_callback
+        data_map_callback=data_map_callback,
         remove_unused_columns=False
     )
     # Train and/or evaluate
