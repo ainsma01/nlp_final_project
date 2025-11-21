@@ -21,3 +21,7 @@ class DataMapCallback(TrainerCallback):
 
         for key, value in kwargs.items():
             print(f"Key: {key}")
+
+        print(f"Args: {args}")
+        print(f"State: {state}")
+        print(f"Control: {control}")
