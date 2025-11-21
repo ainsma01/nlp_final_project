@@ -323,7 +323,7 @@ class QuestionAnsweringTrainer(Trainer):
                                                          self.control, metrics)
         return metrics
     
-    def compute_loss(self, model, inputs, return_outputs=False):
+    def compute_loss(self, model, inputs, return_outputs=False, **kwargs):
         """
         Override compute_loss to return both loss and outputs
         so that the callback can access them.
