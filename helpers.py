@@ -319,3 +319,10 @@ class QuestionAnsweringTrainer(Trainer):
         loss = outputs.loss
         # return outputs so on_step_end can access logits
         return (loss, outputs) if return_outputs else loss
+    
+    def training_step(self, model, inputs, **kwargs):
+        model.train()
+        outputs = model(**inputs)
+        loss = outputs.loss
+        loss.backward()
+        return (loss, outputs)  # <-- this enables on_step_end to receive logits
