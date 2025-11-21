@@ -1,5 +1,5 @@
 import datasets
-from training_helpers import DataMapCallback
+from training_helpers import DataMapCallback,collate_fn_with_ids
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, \
     AutoModelForQuestionAnswering, Trainer, TrainingArguments, HfArgumentParser
 import evaluate
@@ -81,9 +81,6 @@ def main():
     prepare_train_dataset = lambda exs: prepare_train_dataset_qa(exs, tokenizer)
     prepare_eval_dataset = lambda exs: prepare_validation_dataset_qa(exs, tokenizer)
     
-    keep_columns = ["input_ids", "attention_mask", "token_type_ids", 
-                "start_positions", "end_positions", "unique_id", "feature_id"]
-    
     train_dataset = None
     eval_dataset = None
     train_dataset_featurized = None
@@ -96,7 +93,7 @@ def main():
             prepare_train_dataset,
             batched=True,
             num_proc=NUM_PREPROCESSING_WORKERS,
-            remove_columns=[c for c in train_dataset.column_names if c not in keep_columns]
+            remove_columns=[c for c in train_dataset.column_names if c not in ["input_ids","attention_mask","token_type_ids","start_positions","end_positions","unique_id","feature_id"]]
         )
     if training_args.do_eval:
         eval_dataset = dataset[eval_split]
@@ -142,7 +139,8 @@ def main():
         tokenizer=tokenizer,
         compute_metrics=compute_metrics_and_store_predictions,
         callbacks=[data_map_callback],
-        data_map_callback=data_map_callback
+        data_map_callback=data_map_callback,
+        data_collator=collate_fn_with_ids
     )
     # Train and/or evaluate
     if training_args.do_train:

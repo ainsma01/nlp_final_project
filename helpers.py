@@ -66,8 +66,7 @@ def prepare_train_dataset_qa(examples, tokenizer, max_seq_length=None):
 
     tokenized_examples["start_positions"] = []
     tokenized_examples["end_positions"] = []
-
-    # --- Data Map Requirement: Add the list for unique_id ---
+    tokenized_examples["feature_id"] = list(range(len(tokenized_examples["input_ids"])))
     tokenized_examples["unique_id"] = []
 
     for i, offsets in enumerate(offset_mapping):
@@ -78,11 +77,8 @@ def prepare_train_dataset_qa(examples, tokenizer, max_seq_length=None):
         # from the feature idx to sample idx
         sample_index = sample_mapping[i]
 
-        # --- Data Map Requirement: Map the original example ID to the feature ---
-        # The 'id' field from the original SQuAD dataset is the true unique ID.
-        # print(f"Feature unique ID: {examples['id'][sample_index]}")
-        feature_unique_id = examples["id"][sample_index]
-        tokenized_examples["unique_id"].append(feature_unique_id)
+        # Map original SQuAD example ID
+        tokenized_examples["unique_id"].append(examples["id"][sample_index])
         
         # get the answer for a feature
         answers = examples["answers"][sample_index]

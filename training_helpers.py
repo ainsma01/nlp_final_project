@@ -2,7 +2,7 @@ import json
 import os
 import uuid
 from collections import defaultdict
-
+from transformers import default_data_collator
 import torch
 
 from transformers import TrainerCallback, TrainerState, TrainerControl, TrainingArguments
@@ -96,3 +96,10 @@ class DataMapCallback(TrainerCallback):
                 f.write(json.dumps(entry) + "\n")
 
         return control
+
+def collate_fn_with_ids(batch):
+    collated = default_data_collator(batch)
+    # preserve metadata for callback
+    collated["_unique_id"] = torch.tensor([ex["unique_id"] for ex in batch])
+    collated["_feature_id"] = torch.tensor([ex["feature_id"] for ex in batch])
+    return collated
