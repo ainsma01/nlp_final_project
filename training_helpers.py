@@ -13,11 +13,11 @@ class TrainingDynamicsCallback(TrainerCallback):
 
     def on_prediction_step(self, args, state, control, outputs, **inputs):
         # outputs: model predictions
-        # inputs: batch inputs including example_id
+        # inputs: batch inputs including id
         start_logits = outputs.start_logits.detach().cpu()
         end_logits   = outputs.end_logits.detach().cpu()
 
-        batch_ids = inputs["example_id"].detach().cpu()
+        batch_ids = inputs["id"].detach().cpu()
         gold_start = inputs["start_positions"].detach().cpu()
         gold_end   = inputs["end_positions"].detach().cpu()
 
