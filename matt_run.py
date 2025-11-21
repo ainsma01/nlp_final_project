@@ -52,7 +52,7 @@ def main():
 
     training_args, args = argp.parse_args_into_dataclasses()
 
-    dataset = datasets.load_dataset()
+    dataset = datasets.load_dataset("squad")
     eval_split = 'validation'
 
     # Add an ID column to the dataset
@@ -89,9 +89,9 @@ def main():
             padding="max_length"
         )
 
-        out["example_id"] = example["example_id"]
-        out["start_positions"] = example["answers"]["answer_start"][0]
-        out["end_positions"]   = out["start_positions"] + len(example["answers"]["text"][0])
+        out["id"] = ex["id"]
+        out["start_positions"] = ex["answers"]["answer_start"][0]
+        out["end_positions"]   = out["start_positions"] + len(ex["answers"]["text"][0])
 
         return out
 
@@ -158,7 +158,7 @@ def main():
         train_dataset=train_dataset_featurized,
         eval_dataset=eval_dataset_featurized,
         tokenizer=tokenizer,
-        compute_metrics=compute_metrics_and_store_predictions
+        compute_metrics=compute_metrics_and_store_predictions,
         callback=[callback]
     )
     # Train and/or evaluate
