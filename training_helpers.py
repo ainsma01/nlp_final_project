@@ -19,12 +19,14 @@ class DataMapCallback(TrainerCallback):
         """
         print("On step end")
 
-        for key, value in kwargs.items():
-            print(f"Key: {key}")
+        # for key, value in kwargs.items():
+        #     print(f"Key: {key}")
 
-        print(f"Args: {args}")
-        print(f"State: {state}")
-        print(f"Control: {control}")
+        # print(f"Args: {args}")
+        # print(f"State: {state}")
+        # print(f"Control: {control}")
+
+        print(f"Model: {kwargs["model"]}")
 
         # Trainer instance may not be passed directly; we can access via model.trainer
         trainer = kwargs.get("model").trainer
