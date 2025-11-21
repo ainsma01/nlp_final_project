@@ -118,6 +118,8 @@ def prepare_train_dataset_qa(examples, tokenizer, max_seq_length=None):
                     token_end_index -= 1
                 tokenized_examples["end_positions"].append(token_end_index + 1)
 
+    print(f"Tokenized examples: {tokenized_examples}")
+
     return tokenized_examples
 
 
