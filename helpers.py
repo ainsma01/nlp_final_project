@@ -321,8 +321,12 @@ class QuestionAnsweringTrainer(Trainer):
         return metrics
     
     def compute_loss(self, model, inputs, return_outputs=False, **kwargs):
-       # Forward pass
-        outputs = model(**inputs)
+        # Forward pass
+        # Extract model inputs only
+        model_input_keys = ['input_ids', 'attention_mask', 'token_type_ids', 'start_positions', 'end_positions']
+        model_inputs = {k: inputs[k] for k in model_input_keys if k in inputs}
+
+        outputs = model(model_inputs)
         loss = outputs.loss
 
         # Pass batch directly to callback
