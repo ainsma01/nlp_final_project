@@ -1,5 +1,5 @@
 import datasets
-from training_helpers import DataMapsCallback, DataMapsTrainer
+from training_helpers import DataMapsCallback
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, \
     AutoModelForQuestionAnswering, Trainer, TrainingArguments, HfArgumentParser
 import evaluate
