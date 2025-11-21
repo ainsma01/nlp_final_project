@@ -23,21 +23,7 @@ class DataMapCallback(TrainerCallback):
         start_labels = inputs["start_positions"]
         end_labels = inputs["end_positions"]
 
-        start_logits = outputs.start_logits.detach().cpu()
-        end_logits = outputs.end_logits.detach().cpu()
-
-        start_probs = torch.softmax(start_logits, dim=-1)
-        end_probs = torch.softmax(end_logits, dim=-1)
-
-        start_conf = start_probs.gather(1, start_labels.unsqueeze(-1)).squeeze(-1)
-        end_conf = end_probs.gather(1, end_labels.unsqueeze(-1)).squeeze(-1)
-
-        for i, ex_id in enumerate(example_ids):
-            total_loss = -torch.log(start_conf[i] + 1e-12) - torch.log(end_conf[i] + 1e-12)
-            confidence = ((start_conf[i] + end_conf[i]) / 2).item()
-
-            self.example_losses[ex_id].append(total_loss.item())
-            self.example_confidences[ex_id].append(confidence)
+        
 
     def on_step_end(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
         """
