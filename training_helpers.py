@@ -37,32 +37,19 @@ class DataMapCallback(TrainerCallback):
             confidence = ((start_conf[i] + end_conf[i]) / 2).item()
             self.example_losses[ex_id].append(total_loss.item())
             self.example_confidences[ex_id].append(confidence)
-        
-        
 
-    def on_step_end(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
-        """
-        Event called at the end of a training step. If using gradient accumulation, one training step might take
-        several inputs.
-        """
-        # print("On step end")
+    def on_train_end(self, args, state, control, **kwargs):
+        data_map = {}
+        for ex_id in self.example_losses:
+            losses = self.example_losses[ex_id]
+            confidences = self.example_confidences[ex_id]
+            data_map[ex_id] = {
+                "losses": losses,
+                "avg_loss": sum(losses)/len(losses),
+                "confidence": sum(confidences)/len(confidences),
+                "variability": torch.std(torch.tensor(confidences)).item()
+            }
 
-        # # for key, value in kwargs.items():
-        # #     print(f"Key: {key}")
-
-        # # print(f"Args: {args}")
-        # # print(f"State: {state}")
-        # # print(f"Control: {control}")
-
-        # print(f"Model: {kwargs["model"]}")
-
-        # # Trainer instance may not be passed directly; we can access via model.trainer
-        # trainer = kwargs.get("model").trainer
-        # if not trainer:
-        #     return
-
-        # inputs = getattr(trainer, "_current_inputs", None)
-        # outputs = getattr(trainer, "_current_outputs", None)
-
-        # print(f"Inputs: {inputs}")
-        # print(f"Outputs: {outputs}")
+        with open("data_map.json", "w") as f:
+            json.dump(data_map, f, indent=2)
+        print("Data map saved to data_map.json")
