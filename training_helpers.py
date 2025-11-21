@@ -57,6 +57,9 @@ class DataMapCallback(TrainerCallback):
         # This is a critical point: The 'inputs' dictionary contains the batch data.
         # We need the unique IDs from this batch.
         inputs = kwargs.get('inputs')
+        print(f"Inputs: {inputs}")
+        print(f"Current loss: {current_loss}")
+        print(f"Current epoch: {current_epoch}")
         if not inputs or 'unique_id' not in inputs:
             # This is expected behavior if the input dict doesn't contain the IDs
             # (e.g., if the user is running evaluation or prediction steps).
