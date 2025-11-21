@@ -128,6 +128,8 @@ def main():
         nonlocal eval_predictions
         eval_predictions = eval_preds
         return compute_metrics(eval_preds)
+    
+    training_args["remove_unused_columns"] = False
 
     # Initialize the Trainer object with the specified arguments and the model and dataset we loaded above
     data_map_callback = DataMapCallback()
@@ -139,8 +141,7 @@ def main():
         tokenizer=tokenizer,
         compute_metrics=compute_metrics_and_store_predictions,
         callbacks=[data_map_callback],
-        data_map_callback=data_map_callback,
-        remove_unused_columns=False
+        data_map_callback=data_map_callback
     )
     # Train and/or evaluate
     if training_args.do_train:
