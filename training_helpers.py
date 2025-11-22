@@ -10,7 +10,7 @@ from transformers import TrainerCallback, TrainerState, TrainerControl, Training
 
 class DataMapCallback(TrainerCallback):
 
-    def __init__(self, output_dir="datamap_results"):
+    def __init__(self, output_dir="data_maps"):
         super().__init__()
         self.output_dir = output_dir
         self.example_losses = defaultdict(list)
