@@ -79,7 +79,7 @@ class DataMapCallback(TrainerCallback):
 
             data_map.append({
                 "feature_id": int(fid),
-                "example_id": int(uid),
+                "example_id": str(uid),
                 "correctness": correctness,
                 "variability": variability,
                 "confidence": avg_confidence
