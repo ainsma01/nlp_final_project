@@ -60,38 +60,47 @@ class DataMapCallback(TrainerCallback):
         self.feature_to_example.clear()
 
     def on_epoch_end(self, args, state, control, **kwargs):
-
-        data_map = []
+        
+        # 1. Group feature metrics by their unique example ID
+        example_metrics = defaultdict(lambda: {'correctness': [], 'variability': [], 'confidence': []})
 
         for fid, uid in self.feature_to_example.items():
-            # convert lists to tensors
+            # ... (Existing calculations remain the same) ...
+            
             losses_tensor = torch.tensor(self.example_losses[fid])
             confidences_tensor = torch.tensor(self.example_confidences[fid])
             preds = self.example_predictions[fid]
             true_start, true_end = self.example_true_labels[fid]
 
-            # correctness: fraction of predictions exactly matching true start/end
+            # Calculate the feature-level metrics
             correctness = float(sum(1 for p in preds if p == (true_start, true_end)) / len(preds))
-
-            # variability and average confidence
             variability = float(torch.std(losses_tensor).item())
             avg_confidence = float(torch.mean(confidences_tensor).item())
 
+            # Store the feature metrics under the unique example ID
+            example_metrics[uid]['correctness'].append(correctness)
+            example_metrics[uid]['variability'].append(variability)
+            example_metrics[uid]['confidence'].append(avg_confidence)
+
+        data_map = []
+        
+        # 2. Aggregate the feature metrics to the example level
+        for uid, metrics in example_metrics.items():
+            # Take the average of the metrics across all features belonging to this example
             data_map.append({
-                "feature_id": int(fid),
                 "example_id": str(uid),
-                "correctness": correctness,
-                "variability": variability,
-                "confidence": avg_confidence
+                "correctness": sum(metrics['correctness']) / len(metrics['correctness']),
+                "variability": sum(metrics['variability']) / len(metrics['variability']),
+                "confidence": sum(metrics['confidence']) / len(metrics['confidence'])
             })
 
-        # write per-epoch JSONL file
+        # ... (Existing file write logic remains the same) ...
         out_file = f"data_map_epoch_{int(state.epoch)}.jsonl"
         with open(out_file, "w") as f:
             for entry in data_map:
                 f.write(json.dumps(entry) + "\n")
 
-        print(f"[DataMapCallback] Wrote {len(data_map)} features to {out_file}")
+        print(f"[DataMapCallback] Wrote {len(data_map)} examples to {out_file}")
 
 
 def collate_fn_with_ids(batch):
