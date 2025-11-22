@@ -320,33 +320,21 @@ class QuestionAnsweringTrainer(Trainer):
                                                          self.control, metrics)
         return metrics
     
-    def training_step(self, model, inputs):
-        model.train()
+    def compute_loss(self, model, inputs, return_outputs=False, **kwargs):
+        # Forward pass
+        # Extract model inputs only
         model_input_keys = ['input_ids', 'attention_mask', 'token_type_ids', 'start_positions', 'end_positions']
-        outputs = model(**{k: inputs[k] for k in model_input_keys if k in inputs})
+        model_inputs = {k: inputs[k] for k in model_input_keys if k in inputs}
+
+        outputs = model(**model_inputs)
         loss = outputs.loss
 
+        # Pass batch directly to callback
         if self.data_map_callback is not None:
             self.data_map_callback.log_batch(inputs, outputs)
 
-        loss.backward()
-        return loss.detach()
-    
-    # def compute_loss(self, model, inputs, return_outputs=False, **kwargs):
-    #     # Forward pass
-    #     # Extract model inputs only
-    #     model_input_keys = ['input_ids', 'attention_mask', 'token_type_ids', 'start_positions', 'end_positions']
-    #     model_inputs = {k: inputs[k] for k in model_input_keys if k in inputs}
+        # Save inputs and outputs for callback
+        self._current_inputs = inputs
+        self._current_outputs = outputs
 
-    #     outputs = model(**model_inputs)
-    #     loss = outputs.loss
-
-    #     # Pass batch directly to callback
-    #     if self.data_map_callback is not None:
-    #         self.data_map_callback.log_batch(inputs, outputs)
-
-    #     # Save inputs and outputs for callback
-    #     self._current_inputs = inputs
-    #     self._current_outputs = outputs
-
-    #     return (loss, outputs) if return_outputs else loss
+        return (loss, outputs) if return_outputs else loss
