@@ -55,12 +55,6 @@ def main():
 
     dataset = datasets.load_dataset("squad")
     eval_split = 'validation'
-
-    # Add an ID column to the dataset
-    def add_id(ex, idx):
-        ex['id'] = idx
-        return ex
-    dataset = dataset.map(add_id, with_indices=True)
     
     # NLI models need to have the output label count specified (label 0 is "entailed", 1 is "neutral", and 2 is "contradiction")
     task_kwargs = {}
