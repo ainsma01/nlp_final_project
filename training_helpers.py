@@ -20,8 +20,8 @@ class DataMapCallback(TrainerCallback):
 
     def log_batch(self, inputs, outputs):
         """Collects data per feature for later aggregation"""
-        feature_ids = inputs["feature_id"]
-        unique_ids  = inputs["unique_id"]
+        feature_ids = inputs["_feature_id"]
+        unique_ids  = inputs["_unique_id"]
 
         start_labels = inputs["start_positions"].to(outputs.start_logits.device)
         end_labels   = inputs["end_positions"].to(outputs.end_logits.device)
@@ -99,7 +99,7 @@ def collate_fn_with_ids(batch):
     collated = default_data_collator(batch)
 
     # preserve metadata for callback
-    # collated["_unique_id"] = torch.tensor([ex["unique_id"] for ex in batch])
-    # collated["_feature_id"] = torch.tensor([ex["feature_id"] for ex in batch])
+    collated["_unique_id"] = torch.tensor([ex["unique_id"] for ex in batch])
+    collated["_feature_id"] = torch.tensor([ex["feature_id"] for ex in batch])
 
     return collated
